@@ -73,7 +73,7 @@ const ENDPOINT = '/api/dewater'
 const columns = ["记录编号", "脱水机编号", "进泥量", "出泥含水率", "絮凝剂用量", "运行时长", "操作人员", "运行状态"]
 const actions = ["确认开机", "确认停机", "登记故障"]
 const statuses = ["待开机", "运行中", "已停机", "故障停机"]
-const stats = [{"label": "运行机组", "value": 0}, {"label": "今日脱水时长", "value": 0}, {"label": "出泥含水率均值", "value": 0}]
+const stats = ref([{"label": "运行机组", "value": 0}, {"label": "今日脱水时长", "value": 0}, {"label": "出泥含水率均值", "value": 0}])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +121,12 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    if (payload.stats) {
+      const metricKeys = ['created', 'pending', 'abnormal'] as const
+      stats.value.forEach((card, index) => {
+        card.value = payload.stats[metricKeys[index]] ?? card.value
+      })
+    }
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '脱水运行列表读取失败'
   }

@@ -3,13 +3,13 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.metrics import STATUS_FLOW, sync_flags
 from app.store import store
 
 MODULE = "pump"
 REQUIRED_FIELDS = ["泵站编号", "泵组台数", "运行泵号"]
-STATUS_ORDER = ["待启泵", "运行中", "待检修", "已停泵"]
+STATUS_ORDER = STATUS_FLOW["pump"]
 ACTION_RULES = {"启泵运行": "运行中", "安排检修": "待检修", "停泵": "已停泵"}
-NEGATIVE_ACTIONS = []
 
 
 class PumpService:
@@ -41,8 +41,7 @@ class PumpService:
         entry = {"id": max((int(row.get("id", 0)) for row in rows), default=0) + 1}
         entry.update({field: values.get(field) for field in REQUIRED_FIELDS})
         entry["status"] = STATUS_ORDER[0]
-        entry["pending"] = True
-        entry["abnormal"] = False
+        sync_flags("pump", entry)
         rows.append(entry)
         return entry, []
 
@@ -56,6 +55,5 @@ class PumpService:
         if target not in STATUS_ORDER:
             return None, f"目标状态「{target}」不在允许的状态序列里"
         entry["status"] = target
-        entry["pending"] = target != STATUS_ORDER[-1]
-        entry["abnormal"] = action in NEGATIVE_ACTIONS
+        sync_flags("pump", entry)
         return entry, f"泵站已{action}"

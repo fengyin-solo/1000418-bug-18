@@ -73,7 +73,7 @@ const ENDPOINT = '/api/effluent'
 const columns = ["监测编号", "采样时间", "出水流量", "化学需氧量", "氨氮浓度", "总磷浓度", "达标判定", "监测状态"]
 const actions = ["开始检测", "判定达标", "标记超标"]
 const statuses = ["待检测", "检测中", "已达标", "已超标"]
-const stats = [{"label": "今日出水量", "value": 0}, {"label": "达标率", "value": 0}, {"label": "超标次数", "value": 0}]
+const stats = ref([{"label": "今日出水量", "value": 0}, {"label": "达标率", "value": 0}, {"label": "超标次数", "value": 0}])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +121,12 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    if (payload.stats) {
+      const metricKeys = ['created', 'pending', 'abnormal'] as const
+      stats.value.forEach((card, index) => {
+        card.value = payload.stats[metricKeys[index]] ?? card.value
+      })
+    }
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '出水监测列表读取失败'
   }

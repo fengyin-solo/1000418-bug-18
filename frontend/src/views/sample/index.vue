@@ -73,7 +73,7 @@ const ENDPOINT = '/api/sample'
 const columns = ["检测单号", "取样点位", "检测项目", "检测值", "标准限值", "检测结论", "检测人员", "检测状态"]
 const actions = ["开始检测", "判定合格", "判定不合格"]
 const statuses = ["待取样", "检测中", "合格", "不合格"]
-const stats = [{"label": "待取样检测", "value": 0}, {"label": "检测合格率", "value": 0}, {"label": "不合格批次", "value": 0}]
+const stats = ref([{"label": "待取样检测", "value": 0}, {"label": "检测合格率", "value": 0}, {"label": "不合格批次", "value": 0}])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +121,12 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    if (payload.stats) {
+      const metricKeys = ['created', 'pending', 'abnormal'] as const
+      stats.value.forEach((card, index) => {
+        card.value = payload.stats[metricKeys[index]] ?? card.value
+      })
+    }
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '取样检测列表读取失败'
   }

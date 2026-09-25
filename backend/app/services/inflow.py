@@ -3,13 +3,13 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.metrics import STATUS_FLOW, sync_flags
 from app.store import store
 
 MODULE = "inflow"
 REQUIRED_FIELDS = ["监测编号", "采样时间", "进水流量"]
-STATUS_ORDER = ["待检测", "检测中", "已记录", "已作废"]
+STATUS_ORDER = STATUS_FLOW["inflow"]
 ACTION_RULES = {"开始检测": "检测中", "确认记录": "已记录", "作废记录": "已作废"}
-NEGATIVE_ACTIONS = ["作废记录"]
 
 
 class InflowService:
@@ -41,8 +41,7 @@ class InflowService:
         entry = {"id": max((int(row.get("id", 0)) for row in rows), default=0) + 1}
         entry.update({field: values.get(field) for field in REQUIRED_FIELDS})
         entry["status"] = STATUS_ORDER[0]
-        entry["pending"] = True
-        entry["abnormal"] = False
+        sync_flags("inflow", entry)
         rows.append(entry)
         return entry, []
 
@@ -56,6 +55,5 @@ class InflowService:
         if target not in STATUS_ORDER:
             return None, f"目标状态「{target}」不在允许的状态序列里"
         entry["status"] = target
-        entry["pending"] = target != STATUS_ORDER[-1]
-        entry["abnormal"] = action in NEGATIVE_ACTIONS
+        sync_flags("inflow", entry)
         return entry, f"进水记录已{action}"

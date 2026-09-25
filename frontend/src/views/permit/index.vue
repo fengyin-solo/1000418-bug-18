@@ -73,7 +73,7 @@ const ENDPOINT = '/api/permit'
 const columns = ["许可编号", "作业类型", "作业地点", "监护人", "安全措施", "许可时间", "有效期至", "许可状态"]
 const actions = ["提交申请", "签发许可", "驳回申请"]
 const statuses = ["待申请", "已受理", "已许可", "已驳回", "已过期"]
-const stats = [{"label": "待受理许可", "value": 0}, {"label": "有效许可", "value": 0}, {"label": "即将到期许可", "value": 0}]
+const stats = ref([{"label": "待受理许可", "value": 0}, {"label": "有效许可", "value": 0}, {"label": "即将到期许可", "value": 0}])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +121,12 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    if (payload.stats) {
+      const metricKeys = ['created', 'pending', 'abnormal'] as const
+      stats.value.forEach((card, index) => {
+        card.value = payload.stats[metricKeys[index]] ?? card.value
+      })
+    }
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '受限空间作业列表读取失败'
   }

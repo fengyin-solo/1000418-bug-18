@@ -3,13 +3,13 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.metrics import STATUS_FLOW, sync_flags
 from app.store import store
 
 MODULE = "chemical"
 REQUIRED_FIELDS = ["单据编号", "药剂名称", "规格型号"]
-STATUS_ORDER = ["待审核", "已审核", "已出入库", "已作废"]
+STATUS_ORDER = STATUS_FLOW["chemical"]
 ACTION_RULES = {"审核单据": "已审核", "确认出入库": "已出入库", "作废单据": "已作废"}
-NEGATIVE_ACTIONS = ["作废单据"]
 
 
 class ChemicalService:
@@ -41,8 +41,7 @@ class ChemicalService:
         entry = {"id": max((int(row.get("id", 0)) for row in rows), default=0) + 1}
         entry.update({field: values.get(field) for field in REQUIRED_FIELDS})
         entry["status"] = STATUS_ORDER[0]
-        entry["pending"] = True
-        entry["abnormal"] = False
+        sync_flags("chemical", entry)
         rows.append(entry)
         return entry, []
 
@@ -56,6 +55,5 @@ class ChemicalService:
         if target not in STATUS_ORDER:
             return None, f"目标状态「{target}」不在允许的状态序列里"
         entry["status"] = target
-        entry["pending"] = target != STATUS_ORDER[-1]
-        entry["abnormal"] = action in NEGATIVE_ACTIONS
+        sync_flags("chemical", entry)
         return entry, f"药剂单据已{action}"

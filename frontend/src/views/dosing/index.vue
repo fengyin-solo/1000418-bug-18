@@ -73,7 +73,7 @@ const ENDPOINT = '/api/dosing'
 const columns = ["加药单号", "药剂名称", "投加浓度", "投加量", "加药点位", "投加时间", "操作人员", "加药状态"]
 const actions = ["开始投加", "确认投加", "撤销投加"]
 const statuses = ["待投加", "投加中", "已投加", "已撤销"]
-const stats = [{"label": "待投加单", "value": 0}, {"label": "今日药剂用量", "value": 0}, {"label": "撤销单数", "value": 0}]
+const stats = ref([{"label": "待投加单", "value": 0}, {"label": "今日药剂用量", "value": 0}, {"label": "撤销单数", "value": 0}])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +121,12 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    if (payload.stats) {
+      const metricKeys = ['created', 'pending', 'abnormal'] as const
+      stats.value.forEach((card, index) => {
+        card.value = payload.stats[metricKeys[index]] ?? card.value
+      })
+    }
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '加药管理列表读取失败'
   }

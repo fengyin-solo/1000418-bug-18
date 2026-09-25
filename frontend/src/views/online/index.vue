@@ -73,7 +73,7 @@ const ENDPOINT = '/api/online'
 const columns = ["仪表编号", "仪表类型", "测量范围", "校准周期", "安装点位", "校准到期日", "责任人", "仪表状态"]
 const actions = ["提交校准", "确认正常", "停用仪表"]
 const statuses = ["待校准", "在运正常", "数据异常", "已停用"]
-const stats = [{"label": "在运仪表", "value": 0}, {"label": "待校准仪表", "value": 0}, {"label": "数据异常仪表", "value": 0}]
+const stats = ref([{"label": "在运仪表", "value": 0}, {"label": "待校准仪表", "value": 0}, {"label": "数据异常仪表", "value": 0}])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +121,12 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    if (payload.stats) {
+      const metricKeys = ['created', 'pending', 'abnormal'] as const
+      stats.value.forEach((card, index) => {
+        card.value = payload.stats[metricKeys[index]] ?? card.value
+      })
+    }
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '在线仪表列表读取失败'
   }

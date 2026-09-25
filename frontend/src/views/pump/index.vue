@@ -73,7 +73,7 @@ const ENDPOINT = '/api/pump'
 const columns = ["泵站编号", "泵组台数", "运行泵号", "出水流量", "液位高度", "运行电流", "值守人员", "泵站状态"]
 const actions = ["启泵运行", "安排检修", "停泵"]
 const statuses = ["待启泵", "运行中", "待检修", "已停泵"]
-const stats = [{"label": "运行泵站", "value": 0}, {"label": "待检修泵站", "value": 0}, {"label": "今日提升水量", "value": 0}]
+const stats = ref([{"label": "运行泵站", "value": 0}, {"label": "待检修泵站", "value": 0}, {"label": "今日提升水量", "value": 0}])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +121,12 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    if (payload.stats) {
+      const metricKeys = ['created', 'pending', 'abnormal'] as const
+      stats.value.forEach((card, index) => {
+        card.value = payload.stats[metricKeys[index]] ?? card.value
+      })
+    }
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '泵站运行列表读取失败'
   }

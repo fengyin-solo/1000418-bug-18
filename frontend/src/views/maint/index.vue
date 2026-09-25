@@ -73,7 +73,7 @@ const ENDPOINT = '/api/maint'
 const columns = ["检修单号", "关联设备", "检修类型", "计划开始日", "实际完成日", "检修人员", "验收人员", "检修状态"]
 const actions = ["受理检修", "提交验收", "确认验收"]
 const statuses = ["待受理", "检修中", "待验收", "已验收"]
-const stats = [{"label": "待受理检修", "value": 0}, {"label": "检修中设备", "value": 0}, {"label": "本月验收单数", "value": 0}]
+const stats = ref([{"label": "待受理检修", "value": 0}, {"label": "检修中设备", "value": 0}, {"label": "本月验收单数", "value": 0}])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +121,12 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    if (payload.stats) {
+      const metricKeys = ['created', 'pending', 'abnormal'] as const
+      stats.value.forEach((card, index) => {
+        card.value = payload.stats[metricKeys[index]] ?? card.value
+      })
+    }
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '设备检修列表读取失败'
   }

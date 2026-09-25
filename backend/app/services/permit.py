@@ -3,13 +3,13 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.metrics import STATUS_FLOW, sync_flags
 from app.store import store
 
 MODULE = "permit"
 REQUIRED_FIELDS = ["许可编号", "作业类型", "作业地点"]
-STATUS_ORDER = ["待申请", "已受理", "已许可", "已驳回", "已过期"]
+STATUS_ORDER = STATUS_FLOW["permit"]
 ACTION_RULES = {"提交申请": "已受理", "签发许可": "已许可", "驳回申请": "已驳回"}
-NEGATIVE_ACTIONS = ["驳回申请"]
 
 
 class PermitService:
@@ -41,8 +41,7 @@ class PermitService:
         entry = {"id": max((int(row.get("id", 0)) for row in rows), default=0) + 1}
         entry.update({field: values.get(field) for field in REQUIRED_FIELDS})
         entry["status"] = STATUS_ORDER[0]
-        entry["pending"] = True
-        entry["abnormal"] = False
+        sync_flags("permit", entry)
         rows.append(entry)
         return entry, []
 
@@ -56,6 +55,5 @@ class PermitService:
         if target not in STATUS_ORDER:
             return None, f"目标状态「{target}」不在允许的状态序列里"
         entry["status"] = target
-        entry["pending"] = target != STATUS_ORDER[-1]
-        entry["abnormal"] = action in NEGATIVE_ACTIONS
+        sync_flags("permit", entry)
         return entry, f"作业许可单已{action}"

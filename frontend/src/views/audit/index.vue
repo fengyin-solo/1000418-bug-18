@@ -73,7 +73,7 @@ const ENDPOINT = '/api/audit'
 const columns = ["审核编号", "审核周期", "审核范围", "超标次数", "整改项数", "审核结论", "审核人员", "审核状态"]
 const actions = ["开始审核", "确认通过", "下发整改"]
 const statuses = ["待审核", "审核中", "已通过", "需整改"]
-const stats = [{"label": "待审核记录", "value": 0}, {"label": "超标总次数", "value": 0}, {"label": "需整改项数", "value": 0}]
+const stats = ref([{"label": "待审核记录", "value": 0}, {"label": "超标总次数", "value": 0}, {"label": "需整改项数", "value": 0}])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +121,12 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    if (payload.stats) {
+      const metricKeys = ['created', 'pending', 'abnormal'] as const
+      stats.value.forEach((card, index) => {
+        card.value = payload.stats[metricKeys[index]] ?? card.value
+      })
+    }
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '达标审核列表读取失败'
   }

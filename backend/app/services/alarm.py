@@ -3,13 +3,13 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.metrics import STATUS_FLOW, sync_flags
 from app.store import store
 
 MODULE = "alarm"
 REQUIRED_FIELDS = ["报警编号", "报警类型", "报警等级"]
-STATUS_ORDER = ["待确认", "已确认", "已处置", "已忽略"]
+STATUS_ORDER = STATUS_FLOW["alarm"]
 ACTION_RULES = {"确认报警": "已确认", "处置报警": "已处置", "忽略报警": "已忽略"}
-NEGATIVE_ACTIONS = ["忽略报警"]
 
 
 class AlarmService:
@@ -41,8 +41,7 @@ class AlarmService:
         entry = {"id": max((int(row.get("id", 0)) for row in rows), default=0) + 1}
         entry.update({field: values.get(field) for field in REQUIRED_FIELDS})
         entry["status"] = STATUS_ORDER[0]
-        entry["pending"] = True
-        entry["abnormal"] = False
+        sync_flags("alarm", entry)
         rows.append(entry)
         return entry, []
 
@@ -56,6 +55,5 @@ class AlarmService:
         if target not in STATUS_ORDER:
             return None, f"目标状态「{target}」不在允许的状态序列里"
         entry["status"] = target
-        entry["pending"] = target != STATUS_ORDER[-1]
-        entry["abnormal"] = action in NEGATIVE_ACTIONS
+        sync_flags("alarm", entry)
         return entry, f"报警事件已{action}"

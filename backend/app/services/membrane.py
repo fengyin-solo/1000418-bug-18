@@ -3,13 +3,13 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.metrics import STATUS_FLOW, sync_flags
 from app.store import store
 
 MODULE = "membrane"
 REQUIRED_FIELDS = ["膜组编号", "膜型号", "膜面积"]
-STATUS_ORDER = ["待投用", "运行中", "待清洗", "已更换"]
+STATUS_ORDER = STATUS_FLOW["membrane"]
 ACTION_RULES = {"确认投用": "运行中", "提交清洗": "待清洗", "更换膜组": "已更换"}
-NEGATIVE_ACTIONS = []
 
 
 class MembraneService:
@@ -41,8 +41,7 @@ class MembraneService:
         entry = {"id": max((int(row.get("id", 0)) for row in rows), default=0) + 1}
         entry.update({field: values.get(field) for field in REQUIRED_FIELDS})
         entry["status"] = STATUS_ORDER[0]
-        entry["pending"] = True
-        entry["abnormal"] = False
+        sync_flags("membrane", entry)
         rows.append(entry)
         return entry, []
 
@@ -56,6 +55,5 @@ class MembraneService:
         if target not in STATUS_ORDER:
             return None, f"目标状态「{target}」不在允许的状态序列里"
         entry["status"] = target
-        entry["pending"] = target != STATUS_ORDER[-1]
-        entry["abnormal"] = action in NEGATIVE_ACTIONS
+        sync_flags("membrane", entry)
         return entry, f"膜组已{action}"

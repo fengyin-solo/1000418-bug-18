@@ -3,13 +3,13 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.metrics import STATUS_FLOW, sync_flags
 from app.store import store
 
 MODULE = "plant"
 REQUIRED_FIELDS = ["单元编码", "单元名称", "处理工艺"]
-STATUS_ORDER = ["待调试", "正常运行", "减量运行", "已停用"]
+STATUS_ORDER = STATUS_FLOW["plant"]
 ACTION_RULES = {"完成调试": "正常运行", "安排减量": "减量运行", "停用单元": "已停用"}
-NEGATIVE_ACTIONS = ["停用单元"]
 
 
 class PlantService:
@@ -41,8 +41,7 @@ class PlantService:
         entry = {"id": max((int(row.get("id", 0)) for row in rows), default=0) + 1}
         entry.update({field: values.get(field) for field in REQUIRED_FIELDS})
         entry["status"] = STATUS_ORDER[0]
-        entry["pending"] = True
-        entry["abnormal"] = False
+        sync_flags("plant", entry)
         rows.append(entry)
         return entry, []
 
@@ -56,6 +55,5 @@ class PlantService:
         if target not in STATUS_ORDER:
             return None, f"目标状态「{target}」不在允许的状态序列里"
         entry["status"] = target
-        entry["pending"] = target != STATUS_ORDER[-1]
-        entry["abnormal"] = action in NEGATIVE_ACTIONS
+        sync_flags("plant", entry)
         return entry, f"工艺单元已{action}"

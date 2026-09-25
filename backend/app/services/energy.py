@@ -3,13 +3,13 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.metrics import STATUS_FLOW, sync_flags
 from app.store import store
 
 MODULE = "energy"
 REQUIRED_FIELDS = ["记录编号", "统计日期", "用电量"]
-STATUS_ORDER = ["待填报", "已填报", "已复核", "有争议"]
+STATUS_ORDER = STATUS_FLOW["energy"]
 ACTION_RULES = {"提交填报": "已填报", "复核确认": "已复核", "标记争议": "有争议"}
-NEGATIVE_ACTIONS = []
 
 
 class EnergyService:
@@ -41,8 +41,7 @@ class EnergyService:
         entry = {"id": max((int(row.get("id", 0)) for row in rows), default=0) + 1}
         entry.update({field: values.get(field) for field in REQUIRED_FIELDS})
         entry["status"] = STATUS_ORDER[0]
-        entry["pending"] = True
-        entry["abnormal"] = False
+        sync_flags("energy", entry)
         rows.append(entry)
         return entry, []
 
@@ -56,6 +55,5 @@ class EnergyService:
         if target not in STATUS_ORDER:
             return None, f"目标状态「{target}」不在允许的状态序列里"
         entry["status"] = target
-        entry["pending"] = target != STATUS_ORDER[-1]
-        entry["abnormal"] = action in NEGATIVE_ACTIONS
+        sync_flags("energy", entry)
         return entry, f"能耗记录已{action}"

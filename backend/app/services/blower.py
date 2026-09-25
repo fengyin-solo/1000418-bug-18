@@ -3,13 +3,13 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.metrics import STATUS_FLOW, sync_flags
 from app.store import store
 
 MODULE = "blower"
 REQUIRED_FIELDS = ["机组编号", "机组型号", "额定风量"]
-STATUS_ORDER = ["待启用", "运行中", "维护中", "已停用"]
+STATUS_ORDER = STATUS_FLOW["blower"]
 ACTION_RULES = {"启用机组": "运行中", "登记维护": "维护中", "停用机组": "已停用"}
-NEGATIVE_ACTIONS = ["停用机组"]
 
 
 class BlowerService:
@@ -41,8 +41,7 @@ class BlowerService:
         entry = {"id": max((int(row.get("id", 0)) for row in rows), default=0) + 1}
         entry.update({field: values.get(field) for field in REQUIRED_FIELDS})
         entry["status"] = STATUS_ORDER[0]
-        entry["pending"] = True
-        entry["abnormal"] = False
+        sync_flags("blower", entry)
         rows.append(entry)
         return entry, []
 
@@ -56,6 +55,5 @@ class BlowerService:
         if target not in STATUS_ORDER:
             return None, f"目标状态「{target}」不在允许的状态序列里"
         entry["status"] = target
-        entry["pending"] = target != STATUS_ORDER[-1]
-        entry["abnormal"] = action in NEGATIVE_ACTIONS
+        sync_flags("blower", entry)
         return entry, f"鼓风机组已{action}"

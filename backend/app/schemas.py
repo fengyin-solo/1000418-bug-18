@@ -8,11 +8,20 @@ from pydantic import BaseModel, Field
 T = TypeVar("T")
 
 
+class StatCard(BaseModel):
+    """模块列表页统计卡片：与运营概览共用同一份口径。"""
+
+    created: int = 0
+    pending: int = 0
+    abnormal: int = 0
+
+
 class PageResult(BaseModel, Generic[T]):
     items: list[T]
     total: int
     page: int = 1
     size: int = 20
+    stats: StatCard = Field(default_factory=StatCard)
 
 
 class ActionResult(BaseModel):

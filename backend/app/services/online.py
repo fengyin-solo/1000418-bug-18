@@ -3,13 +3,13 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.metrics import STATUS_FLOW, sync_flags
 from app.store import store
 
 MODULE = "online"
 REQUIRED_FIELDS = ["仪表编号", "仪表类型", "测量范围"]
-STATUS_ORDER = ["待校准", "在运正常", "数据异常", "已停用"]
+STATUS_ORDER = STATUS_FLOW["online"]
 ACTION_RULES = {"提交校准": "在运正常", "确认正常": "数据异常", "停用仪表": "已停用"}
-NEGATIVE_ACTIONS = ["停用仪表"]
 
 
 class OnlineService:
@@ -41,8 +41,7 @@ class OnlineService:
         entry = {"id": max((int(row.get("id", 0)) for row in rows), default=0) + 1}
         entry.update({field: values.get(field) for field in REQUIRED_FIELDS})
         entry["status"] = STATUS_ORDER[0]
-        entry["pending"] = True
-        entry["abnormal"] = False
+        sync_flags("online", entry)
         rows.append(entry)
         return entry, []
 
@@ -56,6 +55,5 @@ class OnlineService:
         if target not in STATUS_ORDER:
             return None, f"目标状态「{target}」不在允许的状态序列里"
         entry["status"] = target
-        entry["pending"] = target != STATUS_ORDER[-1]
-        entry["abnormal"] = action in NEGATIVE_ACTIONS
+        sync_flags("online", entry)
         return entry, f"在线仪表已{action}"

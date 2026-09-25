@@ -3,13 +3,13 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.metrics import STATUS_FLOW, sync_flags
 from app.store import store
 
 MODULE = "aeration"
 REQUIRED_FIELDS = ["记录编号", "曝气池编号", "溶解氧值"]
-STATUS_ORDER = ["待调节", "已调节", "待复核", "已锁定"]
+STATUS_ORDER = STATUS_FLOW["aeration"]
 ACTION_RULES = {"提交调节": "已调节", "复核确认": "待复核", "锁定参数": "已锁定"}
-NEGATIVE_ACTIONS = []
 
 
 class AerationService:
@@ -41,8 +41,7 @@ class AerationService:
         entry = {"id": max((int(row.get("id", 0)) for row in rows), default=0) + 1}
         entry.update({field: values.get(field) for field in REQUIRED_FIELDS})
         entry["status"] = STATUS_ORDER[0]
-        entry["pending"] = True
-        entry["abnormal"] = False
+        sync_flags("aeration", entry)
         rows.append(entry)
         return entry, []
 
@@ -56,6 +55,5 @@ class AerationService:
         if target not in STATUS_ORDER:
             return None, f"目标状态「{target}」不在允许的状态序列里"
         entry["status"] = target
-        entry["pending"] = target != STATUS_ORDER[-1]
-        entry["abnormal"] = action in NEGATIVE_ACTIONS
+        sync_flags("aeration", entry)
         return entry, f"曝气记录已{action}"

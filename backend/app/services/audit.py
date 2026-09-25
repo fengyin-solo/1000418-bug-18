@@ -3,13 +3,13 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.metrics import STATUS_FLOW, sync_flags
 from app.store import store
 
 MODULE = "audit"
 REQUIRED_FIELDS = ["审核编号", "审核周期", "审核范围"]
-STATUS_ORDER = ["待审核", "审核中", "已通过", "需整改"]
+STATUS_ORDER = STATUS_FLOW["audit"]
 ACTION_RULES = {"开始审核": "审核中", "确认通过": "已通过", "下发整改": "需整改"}
-NEGATIVE_ACTIONS = []
 
 
 class AuditService:
@@ -41,8 +41,7 @@ class AuditService:
         entry = {"id": max((int(row.get("id", 0)) for row in rows), default=0) + 1}
         entry.update({field: values.get(field) for field in REQUIRED_FIELDS})
         entry["status"] = STATUS_ORDER[0]
-        entry["pending"] = True
-        entry["abnormal"] = False
+        sync_flags("audit", entry)
         rows.append(entry)
         return entry, []
 
@@ -56,6 +55,5 @@ class AuditService:
         if target not in STATUS_ORDER:
             return None, f"目标状态「{target}」不在允许的状态序列里"
         entry["status"] = target
-        entry["pending"] = target != STATUS_ORDER[-1]
-        entry["abnormal"] = action in NEGATIVE_ACTIONS
+        sync_flags("audit", entry)
         return entry, f"审核记录已{action}"

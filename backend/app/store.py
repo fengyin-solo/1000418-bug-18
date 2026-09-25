@@ -6,17 +6,20 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.metrics import MODULES, MODULE_LABELS, module_stats, sync_flags
 from app.seed import SEED_ROWS
 
 
 class Store:
     def __init__(self) -> None:
         self._tables: dict[str, list[dict[str, Any]]] = {
-            name: [dict(row) for row in rows] for name, rows in SEED_ROWS.items()
+            name: [sync_flags(name, dict(row)) for row in rows]
+            for name, rows in SEED_ROWS.items()
         }
 
     def module_names(self) -> list[str]:
-        return sorted(self._tables)
+        """按侧边栏入口顺序返回模块键。"""
+        return [key for key, _label in MODULES]
 
     def rows(self, module: str) -> list[dict[str, Any]]:
         return self._tables.setdefault(module, [])
@@ -27,15 +30,18 @@ class Store:
                 return row
         return None
 
+    def stats(self, module: str) -> dict[str, int]:
+        """单个模块的统一口径指标，供模块列表接口直接返回。"""
+        return module_stats(module, self.rows(module))
+
     def overview(self) -> dict[str, object]:
         modules: list[dict[str, object]] = []
         for name in self.module_names():
-            rows = self.rows(name)
+            stats = self.stats(name)
             modules.append({
-                "name": name,
-                "created": len(rows),
-                "pending": sum(1 for row in rows if row.get("pending")),
-                "abnormal": sum(1 for row in rows if row.get("abnormal")),
+                "key": name,
+                "name": MODULE_LABELS[name],
+                **stats,
             })
         cards = [
             {"label": "业务模块", "value": len(modules)},

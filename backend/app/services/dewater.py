@@ -3,13 +3,13 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.metrics import STATUS_FLOW, sync_flags
 from app.store import store
 
 MODULE = "dewater"
 REQUIRED_FIELDS = ["记录编号", "脱水机编号", "进泥量"]
-STATUS_ORDER = ["待开机", "运行中", "已停机", "故障停机"]
+STATUS_ORDER = STATUS_FLOW["dewater"]
 ACTION_RULES = {"确认开机": "运行中", "确认停机": "已停机", "登记故障": "故障停机"}
-NEGATIVE_ACTIONS = []
 
 
 class DewaterService:
@@ -41,8 +41,7 @@ class DewaterService:
         entry = {"id": max((int(row.get("id", 0)) for row in rows), default=0) + 1}
         entry.update({field: values.get(field) for field in REQUIRED_FIELDS})
         entry["status"] = STATUS_ORDER[0]
-        entry["pending"] = True
-        entry["abnormal"] = False
+        sync_flags("dewater", entry)
         rows.append(entry)
         return entry, []
 
@@ -56,6 +55,5 @@ class DewaterService:
         if target not in STATUS_ORDER:
             return None, f"目标状态「{target}」不在允许的状态序列里"
         entry["status"] = target
-        entry["pending"] = target != STATUS_ORDER[-1]
-        entry["abnormal"] = action in NEGATIVE_ACTIONS
+        sync_flags("dewater", entry)
         return entry, f"脱水记录已{action}"

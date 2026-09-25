@@ -73,7 +73,7 @@ const ENDPOINT = '/api/plant'
 const columns = ["单元编码", "单元名称", "处理工艺", "设计处理量", "实际处理量", "运行班组", "投运日期", "单元状态"]
 const actions = ["完成调试", "安排减量", "停用单元"]
 const statuses = ["待调试", "正常运行", "减量运行", "已停用"]
-const stats = [{"label": "运行单元", "value": 0}, {"label": "减量运行单元", "value": 0}, {"label": "设计处理总量", "value": 0}]
+const stats = ref([{"label": "运行单元", "value": 0}, {"label": "减量运行单元", "value": 0}, {"label": "设计处理总量", "value": 0}])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +121,12 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    if (payload.stats) {
+      const metricKeys = ['created', 'pending', 'abnormal'] as const
+      stats.value.forEach((card, index) => {
+        card.value = payload.stats[metricKeys[index]] ?? card.value
+      })
+    }
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '厂区单元列表读取失败'
   }

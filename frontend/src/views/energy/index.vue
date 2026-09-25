@@ -73,7 +73,7 @@ const ENDPOINT = '/api/energy'
 const columns = ["记录编号", "统计日期", "用电量", "单位电耗", "药剂单耗", "吨水电耗", "记录人员", "记录状态"]
 const actions = ["提交填报", "复核确认", "标记争议"]
 const statuses = ["待填报", "已填报", "已复核", "有争议"]
-const stats = [{"label": "本月用电量", "value": 0}, {"label": "吨水电耗均值", "value": 0}, {"label": "药剂单耗", "value": 0}]
+const stats = ref([{"label": "本月用电量", "value": 0}, {"label": "吨水电耗均值", "value": 0}, {"label": "药剂单耗", "value": 0}])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +121,12 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    if (payload.stats) {
+      const metricKeys = ['created', 'pending', 'abnormal'] as const
+      stats.value.forEach((card, index) => {
+        card.value = payload.stats[metricKeys[index]] ?? card.value
+      })
+    }
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '能耗管理列表读取失败'
   }
