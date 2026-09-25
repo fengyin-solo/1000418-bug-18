@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.services.base import ModuleService
 from app.store import store
 
 MODULE = "online"
@@ -12,7 +13,9 @@ ACTION_RULES = {"提交校准": "在运正常", "确认正常": "数据异常", 
 NEGATIVE_ACTIONS = ["停用仪表"]
 
 
-class OnlineService:
+class OnlineService(ModuleService):
+    MODULE = "online"
+
     def list_entries(
         self,
         *,

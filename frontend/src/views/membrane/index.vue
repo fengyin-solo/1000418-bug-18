@@ -73,7 +73,8 @@ const ENDPOINT = '/api/membrane'
 const columns = ["膜组编号", "膜型号", "膜面积", "跨膜压差", "通量", "清洗周期", "投用日期", "膜组状态"]
 const actions = ["确认投用", "提交清洗", "更换膜组"]
 const statuses = ["待投用", "运行中", "待清洗", "已更换"]
-const stats = [{"label": "运行膜组", "value": 0}, {"label": "待清洗膜组", "value": 0}, {"label": "跨膜压差均值", "value": 0}]
+// 统计卡片与运营概览同口径：今日新增、待处理、异常量，数值取自列表接口的 stats
+const stats = ref([{ label: '今日新增', value: 0 }, { label: '待处理', value: 0 }, { label: '异常量', value: 0 }])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +122,10 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    const summary = payload.stats ?? {}
+    stats.value[0].value = summary.created ?? 0
+    stats.value[1].value = summary.pending ?? 0
+    stats.value[2].value = summary.abnormal ?? 0
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '膜组件列表读取失败'
   }

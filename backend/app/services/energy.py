@@ -3,16 +3,19 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.services.base import ModuleService
 from app.store import store
 
 MODULE = "energy"
 REQUIRED_FIELDS = ["记录编号", "统计日期", "用电量"]
 STATUS_ORDER = ["待填报", "已填报", "已复核", "有争议"]
 ACTION_RULES = {"提交填报": "已填报", "复核确认": "已复核", "标记争议": "有争议"}
-NEGATIVE_ACTIONS = []
+NEGATIVE_ACTIONS = ["标记争议"]
 
 
-class EnergyService:
+class EnergyService(ModuleService):
+    MODULE = "energy"
+
     def list_entries(
         self,
         *,

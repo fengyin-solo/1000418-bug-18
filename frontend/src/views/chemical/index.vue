@@ -73,7 +73,8 @@ const ENDPOINT = '/api/chemical'
 const columns = ["单据编号", "药剂名称", "规格型号", "出入数量", "结存数量", "供应商", "经办人员", "单据状态"]
 const actions = ["审核单据", "确认出入库", "作废单据"]
 const statuses = ["待审核", "已审核", "已出入库", "已作废"]
-const stats = [{"label": "待审核单据", "value": 0}, {"label": "本月药剂消耗", "value": 0}, {"label": "结存偏低药剂", "value": 0}]
+// 统计卡片与运营概览同口径：今日新增、待处理、异常量，数值取自列表接口的 stats
+const stats = ref([{ label: '今日新增', value: 0 }, { label: '待处理', value: 0 }, { label: '异常量', value: 0 }])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +122,10 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    const summary = payload.stats ?? {}
+    stats.value[0].value = summary.created ?? 0
+    stats.value[1].value = summary.pending ?? 0
+    stats.value[2].value = summary.abnormal ?? 0
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '药剂出入列表读取失败'
   }

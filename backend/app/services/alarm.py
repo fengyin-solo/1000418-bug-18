@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.services.base import ModuleService
 from app.store import store
 
 MODULE = "alarm"
@@ -12,7 +13,9 @@ ACTION_RULES = {"确认报警": "已确认", "处置报警": "已处置", "忽�
 NEGATIVE_ACTIONS = ["忽略报警"]
 
 
-class AlarmService:
+class AlarmService(ModuleService):
+    MODULE = "alarm"
+
     def list_entries(
         self,
         *,

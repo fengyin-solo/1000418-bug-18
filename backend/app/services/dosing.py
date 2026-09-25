@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.services.base import ModuleService
 from app.store import store
 
 MODULE = "dosing"
@@ -12,7 +13,9 @@ ACTION_RULES = {"开始投加": "投加中", "确认投加": "已投加", "撤�
 NEGATIVE_ACTIONS = ["撤销投加"]
 
 
-class DosingService:
+class DosingService(ModuleService):
+    MODULE = "dosing"
+
     def list_entries(
         self,
         *,

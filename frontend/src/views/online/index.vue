@@ -73,7 +73,8 @@ const ENDPOINT = '/api/online'
 const columns = ["仪表编号", "仪表类型", "测量范围", "校准周期", "安装点位", "校准到期日", "责任人", "仪表状态"]
 const actions = ["提交校准", "确认正常", "停用仪表"]
 const statuses = ["待校准", "在运正常", "数据异常", "已停用"]
-const stats = [{"label": "在运仪表", "value": 0}, {"label": "待校准仪表", "value": 0}, {"label": "数据异常仪表", "value": 0}]
+// 统计卡片与运营概览同口径：今日新增、待处理、异常量，数值取自列表接口的 stats
+const stats = ref([{ label: '今日新增', value: 0 }, { label: '待处理', value: 0 }, { label: '异常量', value: 0 }])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +122,10 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    const summary = payload.stats ?? {}
+    stats.value[0].value = summary.created ?? 0
+    stats.value[1].value = summary.pending ?? 0
+    stats.value[2].value = summary.abnormal ?? 0
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '在线仪表列表读取失败'
   }

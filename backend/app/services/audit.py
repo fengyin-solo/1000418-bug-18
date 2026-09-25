@@ -3,16 +3,19 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.services.base import ModuleService
 from app.store import store
 
 MODULE = "audit"
 REQUIRED_FIELDS = ["审核编号", "审核周期", "审核范围"]
 STATUS_ORDER = ["待审核", "审核中", "已通过", "需整改"]
 ACTION_RULES = {"开始审核": "审核中", "确认通过": "已通过", "下发整改": "需整改"}
-NEGATIVE_ACTIONS = []
+NEGATIVE_ACTIONS = ["下发整改"]
 
 
-class AuditService:
+class AuditService(ModuleService):
+    MODULE = "audit"
+
     def list_entries(
         self,
         *,

@@ -73,7 +73,8 @@ const ENDPOINT = '/api/energy'
 const columns = ["记录编号", "统计日期", "用电量", "单位电耗", "药剂单耗", "吨水电耗", "记录人员", "记录状态"]
 const actions = ["提交填报", "复核确认", "标记争议"]
 const statuses = ["待填报", "已填报", "已复核", "有争议"]
-const stats = [{"label": "本月用电量", "value": 0}, {"label": "吨水电耗均值", "value": 0}, {"label": "药剂单耗", "value": 0}]
+// 统计卡片与运营概览同口径：今日新增、待处理、异常量，数值取自列表接口的 stats
+const stats = ref([{ label: '今日新增', value: 0 }, { label: '待处理', value: 0 }, { label: '异常量', value: 0 }])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +122,10 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    const summary = payload.stats ?? {}
+    stats.value[0].value = summary.created ?? 0
+    stats.value[1].value = summary.pending ?? 0
+    stats.value[2].value = summary.abnormal ?? 0
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '能耗管理列表读取失败'
   }

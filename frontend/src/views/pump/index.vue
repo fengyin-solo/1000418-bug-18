@@ -73,7 +73,8 @@ const ENDPOINT = '/api/pump'
 const columns = ["泵站编号", "泵组台数", "运行泵号", "出水流量", "液位高度", "运行电流", "值守人员", "泵站状态"]
 const actions = ["启泵运行", "安排检修", "停泵"]
 const statuses = ["待启泵", "运行中", "待检修", "已停泵"]
-const stats = [{"label": "运行泵站", "value": 0}, {"label": "待检修泵站", "value": 0}, {"label": "今日提升水量", "value": 0}]
+// 统计卡片与运营概览同口径：今日新增、待处理、异常量，数值取自列表接口的 stats
+const stats = ref([{ label: '今日新增', value: 0 }, { label: '待处理', value: 0 }, { label: '异常量', value: 0 }])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +122,10 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    const summary = payload.stats ?? {}
+    stats.value[0].value = summary.created ?? 0
+    stats.value[1].value = summary.pending ?? 0
+    stats.value[2].value = summary.abnormal ?? 0
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '泵站运行列表读取失败'
   }

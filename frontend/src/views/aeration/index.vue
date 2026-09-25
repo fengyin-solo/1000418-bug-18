@@ -73,7 +73,8 @@ const ENDPOINT = '/api/aeration'
 const columns = ["记录编号", "曝气池编号", "溶解氧值", "风量设定", "风机频率", "调节时间", "操作人员", "控制状态"]
 const actions = ["提交调节", "复核确认", "锁定参数"]
 const statuses = ["待调节", "已调节", "待复核", "已锁定"]
-const stats = [{"label": "今日调节次数", "value": 0}, {"label": "溶解氧均值", "value": 0}, {"label": "锁定参数项", "value": 0}]
+// 统计卡片与运营概览同口径：今日新增、待处理、异常量，数值取自列表接口的 stats
+const stats = ref([{ label: '今日新增', value: 0 }, { label: '待处理', value: 0 }, { label: '异常量', value: 0 }])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +122,10 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    const summary = payload.stats ?? {}
+    stats.value[0].value = summary.created ?? 0
+    stats.value[1].value = summary.pending ?? 0
+    stats.value[2].value = summary.abnormal ?? 0
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '曝气控制列表读取失败'
   }

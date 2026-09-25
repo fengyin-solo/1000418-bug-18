@@ -73,7 +73,8 @@ const ENDPOINT = '/api/sludge'
 const columns = ["处置单号", "污泥来源", "含水率", "污泥量", "处置方式", "外运时间", "承运单位", "处置状态"]
 const actions = ["安排外运", "确认接收", "退回污泥"]
 const statuses = ["待外运", "运输中", "已接收", "已退回"]
-const stats = [{"label": "待外运污泥", "value": 0}, {"label": "本月处置量", "value": 0}, {"label": "平均含水率", "value": 0}]
+// 统计卡片与运营概览同口径：今日新增、待处理、异常量，数值取自列表接口的 stats
+const stats = ref([{ label: '今日新增', value: 0 }, { label: '待处理', value: 0 }, { label: '异常量', value: 0 }])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +122,10 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    const summary = payload.stats ?? {}
+    stats.value[0].value = summary.created ?? 0
+    stats.value[1].value = summary.pending ?? 0
+    stats.value[2].value = summary.abnormal ?? 0
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '污泥处置列表读取失败'
   }

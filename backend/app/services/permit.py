@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.services.base import ModuleService
 from app.store import store
 
 MODULE = "permit"
@@ -12,7 +13,9 @@ ACTION_RULES = {"提交申请": "已受理", "签发许可": "已许可", "驳�
 NEGATIVE_ACTIONS = ["驳回申请"]
 
 
-class PermitService:
+class PermitService(ModuleService):
+    MODULE = "permit"
+
     def list_entries(
         self,
         *,

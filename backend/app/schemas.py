@@ -13,6 +13,8 @@ class PageResult(BaseModel, Generic[T]):
     total: int
     page: int = 1
     size: int = 20
+    # 与运营概览同口径的模块统计（今日新增/待处理/异常量），列表页卡片直接取用
+    stats: dict[str, int] | None = None
 
 
 class ActionResult(BaseModel):

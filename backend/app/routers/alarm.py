@@ -27,7 +27,7 @@ def list_entries(
     if size > 200:
         raise HTTPException(status_code=400, detail="每页最多 200 条，请缩小分页范围")
     items, total = service.list_entries(keyword=keyword, status=status, page=page, size=size)
-    return PageResult(items=items, total=total, page=page, size=size)
+    return PageResult(items=items, total=total, page=page, size=size, stats=service.stats())
 
 
 @router.get("/{entry_id}", response_model=dict)

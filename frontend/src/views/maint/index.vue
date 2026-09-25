@@ -73,7 +73,8 @@ const ENDPOINT = '/api/maint'
 const columns = ["检修单号", "关联设备", "检修类型", "计划开始日", "实际完成日", "检修人员", "验收人员", "检修状态"]
 const actions = ["受理检修", "提交验收", "确认验收"]
 const statuses = ["待受理", "检修中", "待验收", "已验收"]
-const stats = [{"label": "待受理检修", "value": 0}, {"label": "检修中设备", "value": 0}, {"label": "本月验收单数", "value": 0}]
+// 统计卡片与运营概览同口径：今日新增、待处理、异常量，数值取自列表接口的 stats
+const stats = ref([{ label: '今日新增', value: 0 }, { label: '待处理', value: 0 }, { label: '异常量', value: 0 }])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +122,10 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    const summary = payload.stats ?? {}
+    stats.value[0].value = summary.created ?? 0
+    stats.value[1].value = summary.pending ?? 0
+    stats.value[2].value = summary.abnormal ?? 0
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '设备检修列表读取失败'
   }

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.services.base import ModuleService
 from app.store import store
 
 MODULE = "membrane"
@@ -12,7 +13,9 @@ ACTION_RULES = {"确认投用": "运行中", "提交清洗": "待清洗", "更�
 NEGATIVE_ACTIONS = []
 
 
-class MembraneService:
+class MembraneService(ModuleService):
+    MODULE = "membrane"
+
     def list_entries(
         self,
         *,

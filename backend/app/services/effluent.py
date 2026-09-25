@@ -3,16 +3,19 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.services.base import ModuleService
 from app.store import store
 
 MODULE = "effluent"
 REQUIRED_FIELDS = ["监测编号", "采样时间", "出水流量"]
 STATUS_ORDER = ["待检测", "检测中", "已达标", "已超标"]
 ACTION_RULES = {"开始检测": "检测中", "判定达标": "已达标", "标记超标": "已超标"}
-NEGATIVE_ACTIONS = []
+NEGATIVE_ACTIONS = ["标记超标"]
 
 
-class EffluentService:
+class EffluentService(ModuleService):
+    MODULE = "effluent"
+
     def list_entries(
         self,
         *,

@@ -3,16 +3,19 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.services.base import ModuleService
 from app.store import store
 
 MODULE = "dewater"
 REQUIRED_FIELDS = ["记录编号", "脱水机编号", "进泥量"]
 STATUS_ORDER = ["待开机", "运行中", "已停机", "故障停机"]
 ACTION_RULES = {"确认开机": "运行中", "确认停机": "已停机", "登记故障": "故障停机"}
-NEGATIVE_ACTIONS = []
+NEGATIVE_ACTIONS = ["登记故障"]
 
 
-class DewaterService:
+class DewaterService(ModuleService):
+    MODULE = "dewater"
+
     def list_entries(
         self,
         *,

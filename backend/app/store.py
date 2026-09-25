@@ -27,16 +27,22 @@ class Store:
                 return row
         return None
 
+    def module_summary(self, module: str) -> dict[str, int]:
+        """单个模块的统一口径：今日新增=全部记录数、待处理/异常量按同一标记统计。
+
+        概览看板与各模块列表页都必须从这里取数，避免两边各算各的。
+        """
+        rows = self.rows(module)
+        return {
+            "created": len(rows),
+            "pending": sum(1 for row in rows if row.get("pending")),
+            "abnormal": sum(1 for row in rows if row.get("abnormal")),
+        }
+
     def overview(self) -> dict[str, object]:
         modules: list[dict[str, object]] = []
         for name in self.module_names():
-            rows = self.rows(name)
-            modules.append({
-                "name": name,
-                "created": len(rows),
-                "pending": sum(1 for row in rows if row.get("pending")),
-                "abnormal": sum(1 for row in rows if row.get("abnormal")),
-            })
+            modules.append({"name": name, **self.module_summary(name)})
         cards = [
             {"label": "业务模块", "value": len(modules)},
             {"label": "今日新增", "value": sum(int(item["created"]) for item in modules)},

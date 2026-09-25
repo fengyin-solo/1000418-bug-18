@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.services.base import ModuleService
 from app.store import store
 
 MODULE = "chemical"
@@ -12,7 +13,9 @@ ACTION_RULES = {"审核单据": "已审核", "确认出入库": "已出入库", 
 NEGATIVE_ACTIONS = ["作废单据"]
 
 
-class ChemicalService:
+class ChemicalService(ModuleService):
+    MODULE = "chemical"
+
     def list_entries(
         self,
         *,

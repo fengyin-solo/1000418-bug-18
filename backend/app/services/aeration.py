@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.services.base import ModuleService
 from app.store import store
 
 MODULE = "aeration"
@@ -12,7 +13,9 @@ ACTION_RULES = {"提交调节": "已调节", "复核确认": "待复核", "锁�
 NEGATIVE_ACTIONS = []
 
 
-class AerationService:
+class AerationService(ModuleService):
+    MODULE = "aeration"
+
     def list_entries(
         self,
         *,

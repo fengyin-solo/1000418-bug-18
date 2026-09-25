@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.services.base import ModuleService
 from app.store import store
 
 MODULE = "inflow"
@@ -12,7 +13,9 @@ ACTION_RULES = {"开始检测": "检测中", "确认记录": "已记录", "作�
 NEGATIVE_ACTIONS = ["作废记录"]
 
 
-class InflowService:
+class InflowService(ModuleService):
+    MODULE = "inflow"
+
     def list_entries(
         self,
         *,

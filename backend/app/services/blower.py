@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.services.base import ModuleService
 from app.store import store
 
 MODULE = "blower"
@@ -12,7 +13,9 @@ ACTION_RULES = {"启用机组": "运行中", "登记维护": "维护中", "停�
 NEGATIVE_ACTIONS = ["停用机组"]
 
 
-class BlowerService:
+class BlowerService(ModuleService):
+    MODULE = "blower"
+
     def list_entries(
         self,
         *,

@@ -73,7 +73,8 @@ const ENDPOINT = '/api/permit'
 const columns = ["许可编号", "作业类型", "作业地点", "监护人", "安全措施", "许可时间", "有效期至", "许可状态"]
 const actions = ["提交申请", "签发许可", "驳回申请"]
 const statuses = ["待申请", "已受理", "已许可", "已驳回", "已过期"]
-const stats = [{"label": "待受理许可", "value": 0}, {"label": "有效许可", "value": 0}, {"label": "即将到期许可", "value": 0}]
+// 统计卡片与运营概览同口径：今日新增、待处理、异常量，数值取自列表接口的 stats
+const stats = ref([{ label: '今日新增', value: 0 }, { label: '待处理', value: 0 }, { label: '异常量', value: 0 }])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +122,10 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    const summary = payload.stats ?? {}
+    stats.value[0].value = summary.created ?? 0
+    stats.value[1].value = summary.pending ?? 0
+    stats.value[2].value = summary.abnormal ?? 0
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '受限空间作业列表读取失败'
   }

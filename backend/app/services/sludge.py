@@ -3,16 +3,19 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.services.base import ModuleService
 from app.store import store
 
 MODULE = "sludge"
 REQUIRED_FIELDS = ["处置单号", "污泥来源", "含水率"]
 STATUS_ORDER = ["待外运", "运输中", "已接收", "已退回"]
 ACTION_RULES = {"安排外运": "运输中", "确认接收": "已接收", "退回污泥": "已退回"}
-NEGATIVE_ACTIONS = []
+NEGATIVE_ACTIONS = ["退回污泥"]
 
 
-class SludgeService:
+class SludgeService(ModuleService):
+    MODULE = "sludge"
+
     def list_entries(
         self,
         *,

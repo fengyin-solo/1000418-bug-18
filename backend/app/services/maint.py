@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.services.base import ModuleService
 from app.store import store
 
 MODULE = "maint"
@@ -12,7 +13,9 @@ ACTION_RULES = {"受理检修": "检修中", "提交验收": "待验收", "确�
 NEGATIVE_ACTIONS = []
 
 
-class MaintService:
+class MaintService(ModuleService):
+    MODULE = "maint"
+
     def list_entries(
         self,
         *,

@@ -73,7 +73,8 @@ const ENDPOINT = '/api/dewater'
 const columns = ["记录编号", "脱水机编号", "进泥量", "出泥含水率", "絮凝剂用量", "运行时长", "操作人员", "运行状态"]
 const actions = ["确认开机", "确认停机", "登记故障"]
 const statuses = ["待开机", "运行中", "已停机", "故障停机"]
-const stats = [{"label": "运行机组", "value": 0}, {"label": "今日脱水时长", "value": 0}, {"label": "出泥含水率均值", "value": 0}]
+// 统计卡片与运营概览同口径：今日新增、待处理、异常量，数值取自列表接口的 stats
+const stats = ref([{ label: '今日新增', value: 0 }, { label: '待处理', value: 0 }, { label: '异常量', value: 0 }])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +122,10 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    const summary = payload.stats ?? {}
+    stats.value[0].value = summary.created ?? 0
+    stats.value[1].value = summary.pending ?? 0
+    stats.value[2].value = summary.abnormal ?? 0
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '脱水运行列表读取失败'
   }

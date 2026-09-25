@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.services.base import ModuleService
 from app.store import store
 
 MODULE = "plant"
@@ -12,7 +13,9 @@ ACTION_RULES = {"完成调试": "正常运行", "安排减量": "减量运行", 
 NEGATIVE_ACTIONS = ["停用单元"]
 
 
-class PlantService:
+class PlantService(ModuleService):
+    MODULE = "plant"
+
     def list_entries(
         self,
         *,

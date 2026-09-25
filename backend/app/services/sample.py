@@ -3,16 +3,19 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.services.base import ModuleService
 from app.store import store
 
 MODULE = "sample"
 REQUIRED_FIELDS = ["检测单号", "取样点位", "检测项目"]
 STATUS_ORDER = ["待取样", "检测中", "合格", "不合格"]
 ACTION_RULES = {"开始检测": "检测中", "判定合格": "合格", "判定不合格": "不合格"}
-NEGATIVE_ACTIONS = []
+NEGATIVE_ACTIONS = ["判定不合格"]
 
 
-class SampleService:
+class SampleService(ModuleService):
+    MODULE = "sample"
+
     def list_entries(
         self,
         *,
